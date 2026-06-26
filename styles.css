@@ -1,7 +1,4 @@
 :root {
-  --bg-1: #0f0c29;
-  --bg-2: #302b63;
-  --bg-3: #24243e;
   /* default palette — JS overrides --c1/--c2/--c3 on .hello at load */
   --c1: #00f5d4;
   --c2: #9b5de5;
@@ -22,19 +19,10 @@ body {
 
 body {
   font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
-  background: linear-gradient(-45deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-2));
-  background-size: 400% 400%;
-  animation: gradientShift 18s ease infinite;
+  background: #000;
   display: grid;
   place-items: center;
   position: relative;
-}
-
-/* slow drifting background gradient */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 .starfield {
@@ -164,7 +152,6 @@ body {
 
 /* respect users who prefer reduced motion: no entrance, palette still varies */
 @media (prefers-reduced-motion: reduce) {
-  body { animation: none; }
   .letter {
     opacity: 1;
     transform: none;
