@@ -1,10 +1,34 @@
 // ---------------------------------------------------------------------------
 // Randomized animation: each page load picks a different combination of
-// entrance style + color palette + stagger order, so no two reloads look the
-// same. Click the title to re-roll without reloading.
+// language + entrance style + color palette + stagger order, so no two reloads
+// look the same. Click the title to re-roll without reloading.
 // ---------------------------------------------------------------------------
 (function () {
   "use strict";
+
+  // "Hello World" in many languages. `name` is shown in the subtitle; `label`
+  // is an ASCII pronunciation used for the accessible aria-label / screen
+  // readers when the script isn't Latin.
+  const GREETINGS = [
+    { code: "en", name: "English", words: ["Hello", "World"] },
+    { code: "sv", name: "Svenska", words: ["Hej", "Världen"] },
+    { code: "es", name: "Español", words: ["Hola", "Mundo"] },
+    { code: "fr", name: "Français", words: ["Bonjour", "Monde"] },
+    { code: "de", name: "Deutsch", words: ["Hallo", "Welt"] },
+    { code: "it", name: "Italiano", words: ["Ciao", "Mondo"] },
+    { code: "pt", name: "Português", words: ["Olá", "Mundo"] },
+    { code: "nl", name: "Nederlands", words: ["Hallo", "Wereld"] },
+    { code: "fi", name: "Suomi", words: ["Hei", "Maailma"] },
+    { code: "nb", name: "Norsk", words: ["Hallo", "Verden"] },
+    { code: "da", name: "Dansk", words: ["Hej", "Verden"] },
+    { code: "pl", name: "Polski", words: ["Witaj", "Świecie"] },
+    { code: "tr", name: "Türkçe", words: ["Merhaba", "Dünya"] },
+    { code: "eo", name: "Esperanto", words: ["Saluton", "Mondo"] },
+    { code: "haw", name: "ʻŌlelo Hawaiʻi", words: ["Aloha", "Honua"] },
+    { code: "el", name: "Ελληνικά", words: ["Γεια", "Κόσμε"], label: "Geia Kosme" },
+    { code: "ja", name: "日本語", words: ["こんにちは", "世界"], label: "Konnichiwa Sekai" },
+    { code: "hi", name: "हिन्दी", words: ["नमस्ते", "दुनिया"], label: "Namaste Duniya" },
+  ];
 
   // Entrance keyframe names — these must match @keyframes in styles.css.
   const ENTRANCES = [
@@ -42,6 +66,16 @@
     return a;
   }
 
+  // Split a word into user-perceived characters (grapheme clusters) so accents
+  // and combining marks stay attached to their base letter.
+  function graphemes(str) {
+    if (typeof Intl !== "undefined" && Intl.Segmenter) {
+      const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+      return Array.from(seg.segment(str), (s) => s.segment);
+    }
+    return Array.from(str);
+  }
+
   // Compute the animation-delay index (--i) for each letter given an order.
   function staggerIndices(count, order) {
     const idx = Array.from({ length: count }, (_, i) => i);
@@ -60,14 +94,41 @@
     }
   }
 
+  // Rebuild the .hello heading from a greeting, returning the new letter nodes.
+  function buildHello(hello, greeting) {
+    hello.textContent = "";
+    for (const word of greeting.words) {
+      const wordEl = document.createElement("span");
+      wordEl.className = "word";
+      for (const ch of graphemes(word)) {
+        const letter = document.createElement("span");
+        letter.className = "letter";
+        letter.textContent = ch;
+        wordEl.appendChild(letter);
+      }
+      hello.appendChild(wordEl);
+    }
+    hello.setAttribute("aria-label", greeting.label || greeting.words.join(" "));
+    hello.setAttribute("lang", greeting.code);
+    return hello.querySelectorAll(".letter");
+  }
+
+  function restartAnimation(el) {
+    el.style.animation = "none";
+    void el.offsetWidth; // force reflow so the restart actually replays
+    el.style.animation = "";
+  }
+
   function randomize() {
     const hello = document.querySelector(".hello");
     if (!hello) return;
-    const letters = hello.querySelectorAll(".letter");
 
+    const greeting = pick(GREETINGS);
     const entrance = pick(ENTRANCES);
     const palette = pick(PALETTES);
     const order = pick(ORDERS);
+
+    const letters = buildHello(hello, greeting);
     const indices = staggerIndices(letters.length, order);
 
     hello.style.setProperty("--enter", entrance);
@@ -77,17 +138,18 @@
 
     letters.forEach((letter, i) => {
       letter.style.setProperty("--i", indices[i]);
-      // Restart the CSS animations so a re-roll (click) replays the entrance.
-      letter.style.animation = "none";
-      // Force reflow so the browser registers the reset before re-enabling.
-      void letter.offsetWidth;
-      letter.style.animation = "";
     });
+
+    const subtitle = document.querySelector(".subtitle");
+    if (subtitle) {
+      subtitle.textContent = greeting.name;
+      restartAnimation(subtitle);
+    }
   }
 
   randomize();
 
-  // Re-roll on click (or Enter/Space) without a full reload — nice for demos.
+  // Re-roll on click without a full reload — nice for demos.
   const hello = document.querySelector(".hello");
   if (hello) {
     hello.addEventListener("click", randomize);
