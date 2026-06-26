@@ -4,7 +4,7 @@
   "private": true,
   "description": "Animated Hello World static web app",
   "scripts": {
-    "dev": "npx --yes serve . -l 3000",
-    "start": "npx --yes serve . -l 3000"
+    "dev": "node server.js",
+    "start": "node server.js"
   }
 }

@@ -51,14 +51,17 @@ feature branch ──PR──▶ main
 
 ## Run it locally
 
-No install needed (uses `npx`):
+Zero dependencies — `npm run dev` runs a tiny built-in Node static server
+(`server.js`), no install or network needed:
 
 ```bash
-npm run dev      # serves at http://localhost:3000
+npm run dev               # serves at http://localhost:3000
+PORT=8080 npm run dev     # or pick a different port
 ```
 
-Or with Python:
+Equivalents that also work:
 
 ```bash
+node server.js            # same thing, without npm
 python3 -m http.server 3000
 ```
