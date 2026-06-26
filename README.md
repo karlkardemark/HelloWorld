@@ -4,7 +4,8 @@ A tiny single-page web app that animates the words **Hello World** in a cool way
 
 ## Features
 
-- **Randomized every load** — each reload picks a different entrance style, color palette, and stagger order, so no two visits look the same. Click the title to re-roll without reloading.
+- **Randomized every load** — each reload picks a different language, entrance style, color palette, and stagger order, so no two visits look the same. Click the title to re-roll without reloading.
+- **Multilingual** — greets you in one of 18 languages (English, Svenska, Español, 日本語, हिन्दी, Ελληνικά, and more); the subtitle shows the language name.
 - **Staggered entrance** — letters fly, flip, pop, or spin into place one after another with a blur-to-sharp reveal.
 - **Animated gradient text** that continuously shimmers across the chosen palette.
 - **Gentle floating loop** so the title stays alive after it lands.
