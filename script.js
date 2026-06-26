@@ -1,4 +1,102 @@
-// Lightweight twinkling starfield rendered behind the "Hello World" text.
+// ---------------------------------------------------------------------------
+// Randomized animation: each page load picks a different combination of
+// entrance style + color palette + stagger order, so no two reloads look the
+// same. Click the title to re-roll without reloading.
+// ---------------------------------------------------------------------------
+(function () {
+  "use strict";
+
+  // Entrance keyframe names — these must match @keyframes in styles.css.
+  const ENTRANCES = [
+    "dropIn",
+    "popIn",
+    "swoopIn",
+    "flipIn",
+    "blurIn",
+    "spinIn",
+    "dropOutIn",
+  ];
+
+  // Each palette is a 3-color gradient applied to the letters.
+  const PALETTES = [
+    ["#00f5d4", "#9b5de5", "#f15bb5"], // neon
+    ["#ff9a00", "#ff5e62", "#ff2079"], // sunset
+    ["#00c6ff", "#0072ff", "#00ffa3"], // ocean
+    ["#f72585", "#b5179e", "#7209b7"], // grape
+    ["#aaff00", "#00ffa3", "#00d4ff"], // lime
+    ["#f9d423", "#ff8008", "#ff2079"], // gold
+    ["#e0c3fc", "#8ec5fc", "#a1ffce"], // pastel
+  ];
+
+  // How the per-letter stagger flows in.
+  const ORDERS = ["forward", "reverse", "center-out", "random"];
+
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Compute the animation-delay index (--i) for each letter given an order.
+  function staggerIndices(count, order) {
+    const idx = Array.from({ length: count }, (_, i) => i);
+    switch (order) {
+      case "reverse":
+        return idx.map((i) => count - 1 - i);
+      case "center-out": {
+        const mid = (count - 1) / 2;
+        return idx.map((i) => Math.round(Math.abs(i - mid)));
+      }
+      case "random":
+        return shuffle(idx);
+      case "forward":
+      default:
+        return idx;
+    }
+  }
+
+  function randomize() {
+    const hello = document.querySelector(".hello");
+    if (!hello) return;
+    const letters = hello.querySelectorAll(".letter");
+
+    const entrance = pick(ENTRANCES);
+    const palette = pick(PALETTES);
+    const order = pick(ORDERS);
+    const indices = staggerIndices(letters.length, order);
+
+    hello.style.setProperty("--enter", entrance);
+    hello.style.setProperty("--c1", palette[0]);
+    hello.style.setProperty("--c2", palette[1]);
+    hello.style.setProperty("--c3", palette[2]);
+
+    letters.forEach((letter, i) => {
+      letter.style.setProperty("--i", indices[i]);
+      // Restart the CSS animations so a re-roll (click) replays the entrance.
+      letter.style.animation = "none";
+      // Force reflow so the browser registers the reset before re-enabling.
+      void letter.offsetWidth;
+      letter.style.animation = "";
+    });
+  }
+
+  randomize();
+
+  // Re-roll on click (or Enter/Space) without a full reload — nice for demos.
+  const hello = document.querySelector(".hello");
+  if (hello) {
+    hello.addEventListener("click", randomize);
+  }
+})();
+
+// ---------------------------------------------------------------------------
+// Twinkling starfield rendered on the <canvas> behind the text.
+// ---------------------------------------------------------------------------
 (function () {
   "use strict";
 

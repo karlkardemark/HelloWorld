@@ -4,8 +4,9 @@ A tiny single-page web app that animates the words **Hello World** in a cool way
 
 ## Features
 
-- **Staggered "drop-in" entrance** — each letter flips and fades into place one after another with a blur-to-sharp reveal.
-- **Animated gradient text** that continuously shimmers across a teal → purple → pink palette.
+- **Randomized every load** — each reload picks a different entrance style, color palette, and stagger order, so no two visits look the same. Click the title to re-roll without reloading.
+- **Staggered entrance** — letters fly, flip, pop, or spin into place one after another with a blur-to-sharp reveal.
+- **Animated gradient text** that continuously shimmers across the chosen palette.
 - **Gentle floating loop** so the title stays alive after it lands.
 - **Twinkling starfield** rendered on a `<canvas>` behind the text, with stars that drift and wrap around the screen.
 - **Drifting background gradient** for depth.

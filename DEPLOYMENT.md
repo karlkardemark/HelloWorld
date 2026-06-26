@@ -1,39 +1,53 @@
 # Deployment
 
-This is a static site (HTML/CSS/JS, no build step). It is hosted on **Vercel**
-with two environments, each with its own shareable link:
+This is a static site (HTML/CSS/JS, no build step). It is hosted on
+**Azure Static Web Apps**, wired up through the GitHub Actions workflow at
+`.github/workflows/azure-static-web-apps-ashy-bay-0bd9fab10.yml`.
 
-| Environment | Deploys from branch | URL pattern | Who it's for |
-| --- | --- | --- | --- |
-| **Production** | `main` | `https://<project>.vercel.app` | Share widely with colleagues |
-| **Dev / staging** | `dev` | `https://<project>-git-dev-<scope>.vercel.app` | Test changes before promoting to prod |
+| Environment | Trigger | URL |
+| --- | --- | --- |
+| **Production** | push to `main` | <https://ashy-bay-0bd9fab10.7.azurestaticapps.net> |
+| **Staging / dev** | open a **pull request → `main`** | Azure auto-creates a per-PR preview URL and posts it as a comment on the PR |
 
-> Every branch and pull request also gets its own automatic **preview URL**, so
-> you can share a work-in-progress link without touching `dev` or `main`.
+## How it works
 
-## One-time setup (you do this once, ~2 minutes)
+- Every push to `main` triggers the workflow, which uploads the site to the
+  **production** environment.
+- Every **open pull request targeting `main`** gets its own **preview
+  environment** with a unique URL. Azure posts that URL as a comment on the PR
+  and redeploys it on each push to the PR branch. When the PR is closed, the
+  preview environment is torn down automatically (`close_pull_request_job`).
 
-1. Go to <https://vercel.com/new> and **Sign in with GitHub**.
-2. Click **Import** next to the `karlkardemark/HelloWorld` repository.
-3. Framework preset: **Other** (it's a plain static site — no build needed).
-   Leave Build Command empty and Output Directory as the repo root.
-4. Click **Deploy**. The first deploy of `main` becomes your **production** URL.
-5. In **Project → Settings → Git**, confirm the **Production Branch** is `main`.
-   That makes every other branch (including `dev`) a non-production deploy.
+> Note: on the Static Web Apps free plan, staging environments are
+> **per-pull-request**, not per-branch. A branch like `dev` only gets a live
+> URL while it has an open PR into `main`.
 
-After this, Vercel watches the repo automatically — you never run a deploy by
-hand again.
+### Build configuration
+
+The workflow uses these settings (already correct for this static site):
+
+```yaml
+app_location: "/"      # site source is the repo root
+api_location: ""       # no Azure Functions API
+output_location: ""    # no build output dir
+skip_app_build: true   # nothing to compile — upload as-is
+```
+
+The deployment token is stored in the repo secret
+`AZURE_STATIC_WEB_APPS_API_TOKEN_ASHY_BAY_0BD9FAB10`.
 
 ## Day-to-day workflow
 
 ```
-feature branch ──PR──▶ dev (staging URL) ──PR──▶ main (production URL)
+feature branch ──PR──▶ main
+                 │
+                 └─ Azure posts a preview URL on the PR (test here)
+                    merge ─▶ production redeploys automatically
 ```
 
-1. Develop on a feature branch and open a PR. Vercel posts a **preview URL** on
-   the PR — share that for review.
-2. Merge into `dev` to publish to the **dev/staging** URL for wider testing.
-3. When it's solid, merge `dev` into `main` to ship to **production**.
+1. Develop on a branch and open a PR into `main`.
+2. Test on the preview URL Azure comments on the PR.
+3. Merge to `main` — production redeploys on its own.
 
 ## Run it locally
 
@@ -48,9 +62,3 @@ Or with Python:
 ```bash
 python3 -m http.server 3000
 ```
-
-## Switching hosts
-
-The site is plain static files, so it also runs as-is on Netlify, Cloudflare
-Pages, GitHub Pages, or any static host. Only the `vercel.json` is
-Vercel-specific; everything else is portable.
